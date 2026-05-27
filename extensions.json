@@ -47,7 +47,7 @@
     {
       "id": "open-webui",
       "title": "Open WebUI",
-      "description": "Docker runtime owner and tab integration for Open WebUI.",
+      "description": "Open WebUI tab and service integration through ChironAI host capabilities.",
       "icon": "icons/open-webui-light.svg",
       "repository": "https://github.com/Rayllienstery/chironai-extension-open-webui",
       "publisher": {
@@ -72,8 +72,8 @@
         },
         {
           "id": "service_actions",
-          "label": "Docker Service Actions",
-          "description": "Controls extension-owned Open WebUI Docker resources through ChironAI host capabilities.",
+          "label": "Service Actions",
+          "description": "Requests Open WebUI service actions through ChironAI Docker host capabilities.",
           "risk": "high",
           "requires_user_consent": true
         }
@@ -117,4 +117,3 @@
   ],
   "blocklist": []
 }
-
