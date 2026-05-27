@@ -16,6 +16,7 @@ ALLOWED_RISK = {"low", "medium", "high", "critical"}
 FORBIDDEN_EXTENSION_KEYS = {"latest_version", "default_ref", "archive_url", "source_path"}
 EXTENSION_ID_RE = re.compile(r"^[a-z0-9][a-z0-9-]{1,62}[a-z0-9]$")
 CAPABILITY_ID_RE = re.compile(r"^[a-z0-9_][a-z0-9_-]{0,63}$")
+CONFUSABLE_RE = re.compile(r"[^a-z0-9]+")
 
 
 def _error(errors: list[str], message: str) -> None:
@@ -40,6 +41,10 @@ def _github_owner(repository: str) -> str:
     return parts[0]
 
 
+def _confusable_key(value: str) -> str:
+    return CONFUSABLE_RE.sub("", value.lower())
+
+
 def validate_registry(payload: object) -> list[str]:
     errors: list[str] = []
     if not isinstance(payload, dict):
@@ -54,6 +59,8 @@ def validate_registry(payload: object) -> list[str]:
 
     seen_ids: set[str] = set()
     seen_titles: set[str] = set()
+    seen_confusable_ids: dict[str, str] = {}
+    seen_confusable_titles: dict[str, str] = {}
     seen_repos: set[str] = set()
     for index, raw in enumerate(extensions):
         ctx = f"extensions[{index}]"
@@ -83,6 +90,15 @@ def validate_registry(payload: object) -> list[str]:
             _error(errors, f"{ctx}: duplicate title '{title}'")
         if repository.lower() in seen_repos:
             _error(errors, f"{ctx}: duplicate repository '{repository}'")
+        for label, value, bucket in (
+            ("id", ext_id, seen_confusable_ids),
+            ("title", title, seen_confusable_titles),
+        ):
+            key = _confusable_key(value)
+            if key and key in bucket and bucket[key] != value:
+                _error(errors, f"{ctx}: {label} '{value}' is confusingly similar to '{bucket[key]}'")
+            elif key:
+                bucket[key] = value
         seen_ids.add(ext_id)
         seen_titles.add(title.lower())
         seen_repos.add(repository.lower())
@@ -106,6 +122,8 @@ def _validate_publisher(errors: list[str], raw: object, *, ctx: str) -> None:
         _error(errors, f"{ctx}.publisher: trust_state '{trust}' is not allowed")
     if not isinstance(raw.get("verified"), bool):
         _error(errors, f"{ctx}.publisher: verified must be boolean")
+    if trust in {"official", "trusted"} and raw.get("verified") is not True:
+        _error(errors, f"{ctx}.publisher: {trust} publishers must be verified")
 
 
 def _validate_compatibility(errors: list[str], raw: object, *, ctx: str) -> None:
@@ -141,6 +159,8 @@ def _validate_capabilities(errors: list[str], raw: object, *, ctx: str) -> None:
             _error(errors, f"{cap_ctx}: risk '{risk}' is not allowed")
         if not isinstance(item.get("requires_user_consent"), bool):
             _error(errors, f"{cap_ctx}: requires_user_consent must be boolean")
+        if risk in {"high", "critical"} and item.get("requires_user_consent") is not True:
+            _error(errors, f"{cap_ctx}: high-risk capabilities must require user consent")
 
 
 def _validate_blocklist(errors: list[str], raw: object) -> None:
@@ -172,4 +192,3 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-
