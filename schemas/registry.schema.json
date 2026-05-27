@@ -1,0 +1,139 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/Rayllienstery/ChironAI-Extensions-Registry/schemas/registry.schema.json",
+  "title": "ChironAI Extensions Registry",
+  "type": "object",
+  "required": ["schema_version", "registry", "extensions"],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": { "const": "1" },
+    "registry": { "const": "ChironAI Extensions Registry" },
+    "extensions": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/extension" }
+    },
+    "blocklist": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/blocklist_entry" },
+      "default": []
+    }
+  },
+  "$defs": {
+    "extension": {
+      "type": "object",
+      "required": [
+        "id",
+        "title",
+        "description",
+        "repository",
+        "publisher",
+        "visibility",
+        "compatibility",
+        "capabilities"
+      ],
+      "additionalProperties": false,
+      "not": {
+        "anyOf": [
+          { "required": ["latest_version"] },
+          { "required": ["default_ref"] },
+          { "required": ["archive_url"] },
+          { "required": ["source_path"] }
+        ]
+      },
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z0-9][a-z0-9-]{1,62}[a-z0-9]$"
+        },
+        "title": { "type": "string", "minLength": 1, "maxLength": 80 },
+        "description": { "type": "string", "minLength": 1, "maxLength": 300 },
+        "icon": { "type": "string", "maxLength": 200 },
+        "repository": {
+          "type": "string",
+          "pattern": "^https://github\\.com/[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$"
+        },
+        "repository_id": { "type": "string" },
+        "homepage": { "type": "string" },
+        "license": { "type": "string" },
+        "publisher": { "$ref": "#/$defs/publisher" },
+        "visibility": {
+          "enum": ["official", "trusted", "community", "experimental", "blocked"]
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[a-z0-9][a-z0-9-]{0,39}$"
+          },
+          "uniqueItems": true,
+          "default": []
+        },
+        "compatibility": { "$ref": "#/$defs/compatibility" },
+        "capabilities": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/capability" }
+        }
+      }
+    },
+    "publisher": {
+      "type": "object",
+      "required": ["name", "url", "trust_state", "verified"],
+      "additionalProperties": false,
+      "properties": {
+        "name": { "type": "string", "minLength": 1, "maxLength": 80 },
+        "url": { "type": "string", "pattern": "^https://github\\.com/[A-Za-z0-9_.-]+$" },
+        "trust_state": {
+          "enum": ["official", "trusted", "community", "experimental", "blocked", "unknown"]
+        },
+        "verified": { "type": "boolean" }
+      }
+    },
+    "compatibility": {
+      "type": "object",
+      "required": ["app", "extension_api_version"],
+      "additionalProperties": false,
+      "properties": {
+        "app": { "const": "chironai" },
+        "extension_api_version": { "const": "1" },
+        "min_app_version": { "type": "string" },
+        "max_app_version": { "type": ["string", "null"] }
+      }
+    },
+    "capability": {
+      "type": "object",
+      "required": ["id", "label", "description", "risk", "requires_user_consent"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "type": "string", "pattern": "^[a-z0-9_][a-z0-9_-]{0,63}$" },
+        "label": { "type": "string", "minLength": 1, "maxLength": 80 },
+        "description": { "type": "string", "minLength": 1, "maxLength": 240 },
+        "risk": { "enum": ["low", "medium", "high", "critical"] },
+        "requires_user_consent": { "type": "boolean" }
+      }
+    },
+    "blocklist_entry": {
+      "type": "object",
+      "required": ["match", "reason", "created_at"],
+      "additionalProperties": false,
+      "properties": {
+        "match": {
+          "type": "object",
+          "minProperties": 1,
+          "additionalProperties": false,
+          "properties": {
+            "extension_id": { "type": "string" },
+            "repository": { "type": "string" },
+            "publisher": { "type": "string" },
+            "ref": { "type": "string" },
+            "version": { "type": "string" }
+          }
+        },
+        "reason": { "type": "string", "minLength": 1 },
+        "created_at": { "type": "string" }
+      }
+    }
+  }
+}
+
