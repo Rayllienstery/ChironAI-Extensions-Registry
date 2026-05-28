@@ -8,6 +8,7 @@
       "description": "Trusted local provider that exposes the Ollama runtime through ChironAI.",
       "icon": "icons/ollama-light.svg",
       "repository": "https://github.com/Rayllienstery/chironai-extension-ollama-provider",
+      "repository_id": "R_kgDOSqCesg",
       "publisher": {
         "name": "ChironAI",
         "url": "https://github.com/Rayllienstery",
@@ -50,6 +51,7 @@
       "description": "Open WebUI tab and service integration through ChironAI host capabilities.",
       "icon": "icons/open-webui-light.svg",
       "repository": "https://github.com/Rayllienstery/chironai-extension-open-webui",
+      "repository_id": "R_kgDOSqCfVQ",
       "publisher": {
         "name": "ChironAI",
         "url": "https://github.com/Rayllienstery",
@@ -85,6 +87,7 @@
       "description": "Configure and launch Codex against ChironAI LLM Proxy IDE builds.",
       "icon": "icons/codex-light.svg",
       "repository": "https://github.com/Rayllienstery/chironai-extension-codex-launcher",
+      "repository_id": "R_kgDOSqCgMQ",
       "publisher": {
         "name": "ChironAI",
         "url": "https://github.com/Rayllienstery",
