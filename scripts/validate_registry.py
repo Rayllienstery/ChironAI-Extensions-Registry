@@ -9,6 +9,7 @@ from urllib.parse import urlparse
 
 ROOT = Path(__file__).resolve().parents[1]
 REGISTRY_PATH = ROOT / "extensions.json"
+BLOCKLIST_PATH = ROOT / "blocklist.json"
 ALLOWED_OWNERS = {"Rayllienstery"}
 ALLOWED_VISIBILITY = {"official", "trusted", "community", "experimental", "blocked"}
 ALLOWED_TRUST = {"official", "trusted", "community", "experimental", "blocked", "unknown"}
@@ -179,14 +180,35 @@ def _validate_blocklist(errors: list[str], raw: object) -> None:
         _require_string(errors, item, "created_at", ctx=ctx)
 
 
+def validate_blocklist_payload(payload: object) -> list[str]:
+    errors: list[str] = []
+    if not isinstance(payload, dict):
+        return ["blocklist root must be an object"]
+    if payload.get("schema_version") != "1":
+        _error(errors, "blocklist.schema_version must be '1'")
+    if payload.get("registry") != "ChironAI Extensions Registry":
+        _error(errors, "blocklist.registry must be 'ChironAI Extensions Registry'")
+    _validate_blocklist(errors, payload.get("blocked", []))
+    allowed = {"schema_version", "registry", "blocked"}
+    extra = sorted(set(payload) - allowed)
+    if extra:
+        _error(errors, f"blocklist contains unsupported keys: {', '.join(extra)}")
+    return errors
+
+
 def main() -> int:
     payload = json.loads(REGISTRY_PATH.read_text(encoding="utf-8"))
     errors = validate_registry(payload)
+    if BLOCKLIST_PATH.exists():
+        blocklist_payload = json.loads(BLOCKLIST_PATH.read_text(encoding="utf-8"))
+        errors.extend(validate_blocklist_payload(blocklist_payload))
     if errors:
         for item in errors:
             print(f"ERROR: {item}", file=sys.stderr)
         return 1
     print(f"OK: {REGISTRY_PATH.name} contains {len(payload['extensions'])} extension entries")
+    if BLOCKLIST_PATH.exists():
+        print(f"OK: {BLOCKLIST_PATH.name} is valid")
     return 0
 
 

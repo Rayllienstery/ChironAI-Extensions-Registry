@@ -9,6 +9,8 @@ from each extension repository at runtime by ChironAI.
 ## Registry Contract
 
 - `extensions.json` is the public registry entry point.
+- `blocklist.json` is the emergency blocklist entry point. ChironAI may cache it
+  locally and use the local cache during offline startup.
 - Every entry must point to a GitHub repository owned by an approved publisher.
 - Registry entries must not store `latest_version`, `default_ref`, `archive_url`,
   or branch defaults.
@@ -27,3 +29,9 @@ python scripts/validate_registry.py
 
 The same validator runs in GitHub Actions on every pull request and push.
 
+## Emergency Blocklist
+
+Use `blocklist.json` for urgent disables by extension id, repository,
+repository id, publisher, version, or ref. Entries must include a reason and
+creation timestamp. ChironAI disables matching installed extensions and blocks
+matching installs before activation.

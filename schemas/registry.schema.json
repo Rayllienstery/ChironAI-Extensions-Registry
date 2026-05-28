@@ -125,6 +125,7 @@
           "properties": {
             "extension_id": { "type": "string" },
             "repository": { "type": "string" },
+            "repository_id": { "type": "string" },
             "publisher": { "type": "string" },
             "ref": { "type": "string" },
             "version": { "type": "string" }
@@ -136,4 +137,3 @@
     }
   }
 }
-
